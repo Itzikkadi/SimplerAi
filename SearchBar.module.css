@@ -1,0 +1,24 @@
+.wrap { display: flex; gap: 8px; margin-bottom: 10px; }
+.input {
+  flex: 1;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.input:focus { border-color: var(--green); }
+.input::placeholder { color: var(--text3); }
+.btn {
+  background: var(--green);
+  color: white;
+  border-radius: var(--radius);
+  padding: 10px 20px;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+.btn:hover { background: #17866a; }
+.btn.hasRef { background: var(--purple); }
+.btn.hasRef:hover { background: #6a5eb5; }
