@@ -43,14 +43,17 @@ export function normalizeHit(hit: unknown): Sample {
     previews?: Record<string, string>
     tags?: string[]
   }
+  const id = String(h.id)
   return {
-    id: String(h.id),
+    id,
     name: h.name ?? '',
     username: h.username ?? '',
     duration: h.duration ?? 0,
     license: h.license ?? '',
     previewUrl: h.previews?.['preview-hq-mp3'] ?? h.previews?.['preview-lq-mp3'] ?? null,
     tags: Array.isArray(h.tags) ? h.tags : [],
+    source: 'freesound',
+    sourceUrl: `https://freesound.org/people/${h.username ?? ''}/sounds/${id}/`,
   }
 }
 

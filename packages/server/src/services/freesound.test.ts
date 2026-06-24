@@ -27,6 +27,8 @@ describe('freesound', () => {
       id: '42', name: 'shout', username: 'bob', duration: 2.1,
       license: 'http://creativecommons.org/publicdomain/zero/1.0/',
       previewUrl: 'http://x/p.mp3', tags: ['vocal'],
+      source: 'freesound',
+      sourceUrl: 'https://freesound.org/people/bob/sounds/42/',
     })
   })
 

@@ -9,6 +9,8 @@ export interface Sample {
   license: string
   previewUrl: string | null
   tags: string[]
+  source: 'freesound' | 'archive' | 'ccmixter'
+  sourceUrl?: string
 }
 
 export interface Seed {
