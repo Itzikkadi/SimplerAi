@@ -7,8 +7,25 @@ const q: StructuredQuery = {
   sort: 'relevant', reasoning: 'x',
 }
 
+const fakeItems = [
+  {
+    upload_id: 99,
+    upload_name: 'Soul Vocal Loop',
+    user_name: 'SoulMaker',
+    license_name: 'Attribution',
+    file_page_url: 'https://ccmixter.org/files/SoulMaker/99',
+    files: [
+      {
+        file_nicname: 'mp3',
+        file_name: 'soul_vocal.mp3',
+        download_url: 'https://ccmixter.org/content/SoulMaker/soul_vocal.mp3',
+      },
+    ],
+  },
+]
+
 describe('ccmixter', () => {
-  it('builds URL with keywords but no tags (tags not sent to ccMixter)', () => {
+  it('builds URL with keywords but no tags (ccMixter uses keyword search only)', () => {
     const url = buildCcMixterUrl(q)
     expect(url).toContain('search=vocal')
     expect(url).not.toContain('tags=')
@@ -16,25 +33,8 @@ describe('ccmixter', () => {
     expect(url).toContain('f=json')
   })
 
-  it('returns samples from a valid API response using real field names', async () => {
-    const apiResponse = [
-      {
-        upload_id: 99,
-        upload_name: 'Soul Vocal Loop',
-        user_name: 'SoulMaker',
-        license_name: 'Attribution',
-        file_page_url: 'https://ccmixter.org/files/SoulMaker/99',
-        files: [
-          {
-            file_nicname: 'mp3',
-            file_name: 'soul_vocal.mp3',
-            download_url: 'https://ccmixter.org/content/SoulMaker/soul_vocal.mp3',
-          },
-        ],
-      },
-    ]
-    const fakeFetch = async () => new Response(JSON.stringify(apiResponse), { status: 200 })
-    const results = await searchCcMixter(q, fakeFetch as unknown as typeof fetch)
+  it('returns samples from a valid response using real field names', async () => {
+    const results = await searchCcMixter(q, async () => fakeItems)
     expect(results).toHaveLength(1)
     expect(results[0].id).toBe('ccmixter:99')
     expect(results[0].source).toBe('ccmixter')
@@ -44,17 +44,13 @@ describe('ccmixter', () => {
   })
 
   it('skips items with no MP3 file', async () => {
-    const apiResponse = [
-      { upload_id: 1, upload_name: 'Empty', user_name: 'A', license_name: 'CC', files: [] },
-    ]
-    const fakeFetch = async () => new Response(JSON.stringify(apiResponse), { status: 200 })
-    const results = await searchCcMixter(q, fakeFetch as unknown as typeof fetch)
+    const noMp3 = [{ upload_id: 1, upload_name: 'Empty', user_name: 'A', license_name: 'CC', files: [] }]
+    const results = await searchCcMixter(q, async () => noMp3)
     expect(results).toHaveLength(0)
   })
 
-  it('returns empty array on API failure', async () => {
-    const fakeFetch = async () => new Response('error', { status: 503 })
-    const results = await searchCcMixter(q, fakeFetch as unknown as typeof fetch)
+  it('returns empty array on fetch failure', async () => {
+    const results = await searchCcMixter(q, async () => { throw new Error('network') })
     expect(results).toEqual([])
   })
 

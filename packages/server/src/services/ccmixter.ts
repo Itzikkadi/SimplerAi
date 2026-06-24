@@ -1,3 +1,4 @@
+import https from 'node:https'
 import type { Sample, StructuredQuery } from '@simpler/shared'
 
 const TIMEOUT_MS = 8_000
@@ -39,14 +40,33 @@ function normalizeItem(item: CcMixterItem): Sample | null {
   }
 }
 
+function httpsGetJson<T>(url: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => { req.destroy(); reject(new Error('timeout')) }, TIMEOUT_MS)
+    const req = https.get(url, { maxHeaderSize: 65536 }, (res) => {
+      const chunks: Buffer[] = []
+      res.on('data', (c: Buffer) => chunks.push(c))
+      res.on('end', () => {
+        clearTimeout(timer)
+        if ((res.statusCode ?? 0) >= 400) { reject(new Error(`ccmixter ${res.statusCode}`)); return }
+        try { resolve(JSON.parse(Buffer.concat(chunks).toString())) }
+        catch (e) { reject(e) }
+      })
+      res.on('error', (e) => { clearTimeout(timer); reject(e) })
+    })
+    req.on('error', (e) => { clearTimeout(timer); reject(e) })
+  })
+}
+
 export async function searchCcMixter(
   q: StructuredQuery,
-  fetchImpl: typeof fetch = fetch,
+  fetchImpl?: (url: string) => Promise<CcMixterItem[]>,
 ): Promise<Sample[]> {
+  const url = buildCcMixterUrl(q)
   try {
-    const res = await fetchImpl(buildCcMixterUrl(q), { signal: AbortSignal.timeout(TIMEOUT_MS) })
-    if (!res.ok) return []
-    const items = (await res.json()) as CcMixterItem[]
+    const items = fetchImpl
+      ? await fetchImpl(url)
+      : await httpsGetJson<CcMixterItem[]>(url)
     return items.map(normalizeItem).filter((s): s is Sample => s !== null)
   } catch {
     return []
