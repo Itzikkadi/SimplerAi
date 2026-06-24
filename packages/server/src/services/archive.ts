@@ -17,8 +17,7 @@ interface ArchiveFile {
 }
 
 export function buildArchiveQuery(q: StructuredQuery): string {
-  const terms = [q.keywords, ...q.tags].filter(Boolean).join(' ')
-  return `(${terms}) AND mediatype:audio AND format:MP3`
+  return `(${q.keywords}) AND mediatype:audio AND format:MP3 AND collection:netlabels`
 }
 
 function pickAudioFile(files: ArchiveFile[]): ArchiveFile | undefined {

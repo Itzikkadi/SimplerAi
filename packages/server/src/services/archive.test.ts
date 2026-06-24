@@ -8,11 +8,11 @@ const q: StructuredQuery = {
 }
 
 describe('archive', () => {
-  it('builds a query containing keywords, tags, and mediatype:audio', () => {
+  it('builds a query from keywords targeting netlabels collection', () => {
     const query = buildArchiveQuery(q)
     expect(query).toContain('vocal')
-    expect(query).toContain('dark')
     expect(query).toContain('mediatype:audio')
+    expect(query).toContain('collection:netlabels')
   })
 
   it('returns samples by combining search + per-item metadata fetches', async () => {
