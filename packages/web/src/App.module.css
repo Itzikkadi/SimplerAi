@@ -7,7 +7,7 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  background: var(--mantine-color-dark-8);
+  background: var(--mantine-color-body);
   padding: 18px 0 12px;
   margin-bottom: 4px;
 }

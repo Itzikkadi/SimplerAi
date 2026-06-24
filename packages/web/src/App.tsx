@@ -89,22 +89,19 @@ export function App() {
       <Stack gap="lg">
         <ReferenceTrack onSeeded={() => runSearch()} />
 
-        <Group justify="space-between" align="center">
-          <SegmentedControl
-            size="xs"
-            value={sort}
-            onChange={(v) => {
-              setSort(v as SortKey)
-              runSearch()
-            }}
-            data={SORT_KEYS.map((k) => ({ value: k, label: SORT_LABELS[k] }))}
-          />
-          {results.length > 0 && (
+        {lastSearch && (
+          <Group justify="space-between" align="center">
+            <SegmentedControl
+              size="xs"
+              value={sort}
+              onChange={(v) => setSort(v as SortKey)}
+              data={SORT_KEYS.map((k) => ({ value: k, label: SORT_LABELS[k] }))}
+            />
             <Text size="xs" c="dimmed">
               {results.length} samples
             </Text>
-          )}
-        </Group>
+          </Group>
+        )}
 
         {lastSearch && (
           <Paper withBorder radius="md" p="md" className={styles.summaryCard}>
@@ -130,14 +127,16 @@ export function App() {
           </Paper>
         )}
 
-        <ResultsList
-          results={results}
-          loading={searchMut.isPending}
-          playingId={playingId}
-          saved={library.data ?? []}
-          onPlay={(s) => setPlaying(playingId === s.id ? null : s.id)}
-          onSave={(s) => saveMut.mutate(s)}
-        />
+        {(searchMut.isPending || lastSearch) && (
+          <ResultsList
+            results={results}
+            loading={searchMut.isPending}
+            playingId={playingId}
+            saved={library.data ?? []}
+            onPlay={(s) => setPlaying(playingId === s.id ? null : s.id)}
+            onSave={(s) => saveMut.mutate(s)}
+          />
+        )}
       </Stack>
 
       <Player results={results} />
