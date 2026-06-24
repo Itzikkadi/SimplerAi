@@ -21,7 +21,15 @@ export function buildFreesoundParams(q: StructuredQuery): URLSearchParams {
 }
 
 export function normalizeHit(hit: unknown): Sample {
-  const h = hit as Record<string, any>
+  const h = hit as {
+    id?: unknown
+    name?: string
+    username?: string
+    duration?: number
+    license?: string
+    previews?: Record<string, string>
+    tags?: string[]
+  }
   return {
     id: String(h.id),
     name: h.name ?? '',

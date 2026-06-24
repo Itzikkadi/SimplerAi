@@ -5,4 +5,10 @@ export default [
   js.configs.recommended,
   ...tseslint.configs.recommended,
   { ignores: ['**/dist/**', '**/node_modules/**'] },
+  {
+    files: ['**/*.cjs'],
+    languageOptions: {
+      sourceType: 'commonjs',
+    },
+  },
 ]

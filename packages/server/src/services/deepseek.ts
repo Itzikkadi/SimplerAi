@@ -16,12 +16,17 @@ export function fallbackQuery(req: SearchRequest): StructuredQuery {
   }
 }
 
-function coerce(parsed: Record<string, any>, req: SearchRequest): StructuredQuery {
-  const sort: SortKey = SORT_KEYS.includes(parsed.sort) ? parsed.sort : req.sort ?? 'relevant'
+function coerce(parsed: Record<string, unknown>, req: SearchRequest): StructuredQuery {
+  const sort: SortKey = SORT_KEYS.includes(parsed.sort as SortKey)
+    ? (parsed.sort as SortKey)
+    : req.sort ?? 'relevant'
   return {
     keywords: String(parsed.keywords ?? req.prompt),
     tags: Array.isArray(parsed.tags) ? parsed.tags.map(String) : [],
-    filters: typeof parsed.filters === 'object' && parsed.filters ? parsed.filters : {},
+    filters:
+      typeof parsed.filters === 'object' && parsed.filters
+        ? (parsed.filters as StructuredQuery['filters'])
+        : {},
     sort,
     reasoning: String(parsed.reasoning ?? 'Planned query.'),
   }
