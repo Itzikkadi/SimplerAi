@@ -6,6 +6,8 @@ import { SORT_KEYS } from '@simpler/shared'
 import { env } from '../env'
 import { buildQuery } from '../services/deepseek'
 import { searchFreesound } from '../services/freesound'
+import { searchArchive } from '../services/archive'
+import { searchCcMixter } from '../services/ccmixter'
 import { logSearch, readCache, writeCache } from '../db/index'
 
 const SearchBody = z.object({
@@ -36,7 +38,19 @@ export function searchRoute(db: Database.Database) {
     const structuredQuery = await buildQuery(req, env.DEEPSEEK_API_KEY)
     if (req.seed?.bpmMin != null) structuredQuery.filters.bpmMin = req.seed.bpmMin
     if (req.seed?.bpmMax != null) structuredQuery.filters.bpmMax = req.seed.bpmMax
-    const results = await searchFreesound(structuredQuery, env.FREESOUND_API_KEY)
+
+    const [fsRes, archRes, ccRes] = await Promise.allSettled([
+      searchFreesound(structuredQuery, env.FREESOUND_API_KEY),
+      searchArchive(structuredQuery),
+      searchCcMixter(structuredQuery),
+    ])
+
+    const results = [
+      ...(fsRes.status === 'fulfilled' ? fsRes.value : []),
+      ...(archRes.status === 'fulfilled' ? archRes.value : []),
+      ...(ccRes.status === 'fulfilled' ? ccRes.value : []),
+    ]
+
     const payload: SearchResponse = { structuredQuery, reasoning: structuredQuery.reasoning, results }
 
     logSearch(db, req.prompt, structuredQuery, results.length)
