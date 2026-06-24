@@ -1,4 +1,4 @@
-import { Group, ActionIcon, Text, Stack } from '@mantine/core'
+import { Group, ActionIcon, Text, Stack, Badge } from '@mantine/core'
 import {
   IconPlayerPlayFilled,
   IconPlayerPauseFilled,
@@ -8,6 +8,12 @@ import {
 import type { Sample } from '@simpler/shared'
 import { RightsBadge } from './RightsBadge'
 import { formatDuration } from '../lib/license'
+
+const SOURCE_LABELS: Record<string, string> = {
+  freesound: 'Freesound',
+  archive: 'Archive.org',
+  ccmixter: 'ccMixter',
+}
 
 interface Props {
   sample: Sample
@@ -58,6 +64,24 @@ export function ResultRow({ sample, playing, saved, onPlay, onSave }: Props) {
       </Group>
       <Group gap="xs" wrap="nowrap">
         <RightsBadge license={sample.license} />
+        {sample.sourceUrl ? (
+          <Badge
+            component="a"
+            href={sample.sourceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            variant="outline"
+            size="xs"
+            color="gray"
+            style={{ cursor: 'pointer', textDecoration: 'none' }}
+          >
+            {SOURCE_LABELS[sample.source] ?? sample.source}
+          </Badge>
+        ) : (
+          <Badge variant="outline" size="xs" color="gray">
+            {SOURCE_LABELS[sample.source] ?? sample.source}
+          </Badge>
+        )}
         <ActionIcon
           variant="subtle"
           color={saved ? 'teal' : 'gray'}
