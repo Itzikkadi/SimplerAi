@@ -1,9 +1,12 @@
 import { SORT_KEYS, type SearchRequest, type SortKey, type StructuredQuery } from '@simpler/shared'
 
-const SYSTEM = `You are a search-query planner for a vocal-sample discovery app backed by the Freesound API.
-Given a producer's natural-language request (and optional detected BPM/key/mood seed), respond with ONLY a JSON object:
+const SYSTEM = `You are the search brain for "Simpler", a VOCAL-sample discovery app for music producers (backed by Freesound).
+Producers come here for vocals: acapellas, adlibs, shouts, chants, hooks, phrases, whispers, vocal textures. Unless the user CLEARLY asks for something non-vocal, keep every search vocal-centric — put a vocal word in "keywords" (e.g. "vocal", "acapella", "adlib", "chant", "shout", "phrase") and add vocal-related "tags".
+Favor creative, less-obvious finds over generic stock; when the user wants rare / unique / underdog / "nobody else has it" results, set "sort":"obscure".
+Given the request (and optional detected BPM/key/mood seed), respond with ONLY this JSON object:
 {"keywords": string, "tags": string[], "filters": {"license"?: string, "minDuration"?: number, "maxDuration"?: number}, "sort": "relevant"|"popular"|"newest"|"obscure", "reasoning": string}
-"keywords" MUST be 1-3 core words only (e.g. "vocal shout", "female vocal") — Freesound ANDs every word, so extra words return nothing. Put all descriptors (mood, genre, gender, character) in "tags" instead, where they broaden the search. reasoning is one short sentence.`
+"keywords" MUST be 1-3 core words (e.g. "vocal shout", "female acapella") — Freesound ANDs every word, so extra words return nothing. Put mood, genre, gender, character and BPM feel in "tags", where they broaden the search.
+"reasoning" is one friendly sentence telling the producer what vibe you went after.`
 
 export function fallbackQuery(req: SearchRequest): StructuredQuery {
   const seedBits = [req.seed?.mood, req.seed?.key && `key ${req.seed.key}`].filter(Boolean).join(' ')

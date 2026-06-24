@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Group, Title, Text, Stack, Button, SegmentedControl, Box } from '@mantine/core'
+import { Group, Title, Text, Stack, Button, SegmentedControl, Box, Paper, Badge } from '@mantine/core'
 import { IconHeart, IconSparkles } from '@tabler/icons-react'
 import { SORT_KEYS, type Sample, type SortKey } from '@simpler/shared'
 import { api } from './lib/api'
@@ -105,13 +105,28 @@ export function App() {
           )}
         </Group>
 
-        {lastSearch?.reasoning && (
-          <Group gap={6} wrap="nowrap" className={styles.reasoning}>
-            <IconSparkles size={14} />
-            <Text size="xs" c="dimmed" fs="italic">
+        {lastSearch && (
+          <Paper withBorder radius="md" p="md" className={styles.summaryCard}>
+            <Group gap={8} mb={6} wrap="nowrap">
+              <IconSparkles size={15} color="var(--mantine-color-teal-4)" />
+              <Text size="sm" fw={600}>
+                What I searched for
+              </Text>
+            </Group>
+            <Text size="sm" c="dimmed">
               {lastSearch.reasoning}
             </Text>
-          </Group>
+            <Group gap={6} mt="sm">
+              <Badge variant="light" color="teal" size="sm">
+                {lastSearch.structuredQuery.keywords}
+              </Badge>
+              {lastSearch.structuredQuery.tags.slice(0, 8).map((t) => (
+                <Badge key={t} variant="outline" color="gray" size="sm">
+                  {t}
+                </Badge>
+              ))}
+            </Group>
+          </Paper>
         )}
 
         <ResultsList
