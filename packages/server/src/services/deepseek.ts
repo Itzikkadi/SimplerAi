@@ -3,7 +3,7 @@ import { SORT_KEYS, type SearchRequest, type SortKey, type StructuredQuery } fro
 const SYSTEM = `You are a search-query planner for a vocal-sample discovery app backed by the Freesound API.
 Given a producer's natural-language request (and optional detected BPM/key/mood seed), respond with ONLY a JSON object:
 {"keywords": string, "tags": string[], "filters": {"license"?: string, "minDuration"?: number, "maxDuration"?: number}, "sort": "relevant"|"popular"|"newest"|"obscure", "reasoning": string}
-Keep keywords short and concrete. Prefer vocal-related tags. reasoning is one short sentence.`
+"keywords" MUST be 1-3 core words only (e.g. "vocal shout", "female vocal") — Freesound ANDs every word, so extra words return nothing. Put all descriptors (mood, genre, gender, character) in "tags" instead, where they broaden the search. reasoning is one short sentence.`
 
 export function fallbackQuery(req: SearchRequest): StructuredQuery {
   const seedBits = [req.seed?.mood, req.seed?.key && `key ${req.seed.key}`].filter(Boolean).join(' ')
