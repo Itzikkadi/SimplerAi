@@ -1,0 +1,28 @@
+.shell {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 20px 160px;
+}
+.stickyTop {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--mantine-color-body);
+  padding: 18px 0 12px;
+  margin-bottom: 4px;
+}
+.logo {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.accent {
+  color: var(--mantine-color-teal-5);
+}
+.reasoning {
+  color: var(--mantine-color-teal-4);
+  align-items: center;
+}
+.summaryCard {
+  background: var(--mantine-color-dark-6);
+  border-color: var(--mantine-color-dark-4);
+}

@@ -1,5 +1,8 @@
-node_modules/
-dist/
+node_modules
+dist
 .env
+.env.local
+*.sqlite
+*.sqlite-*
+packages/server/data
 .DS_Store
-*.local
