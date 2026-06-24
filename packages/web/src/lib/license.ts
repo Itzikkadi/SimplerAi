@@ -13,6 +13,7 @@ export function licenseBadge(license = ''): { label: string; color: string; tool
 }
 
 export function formatDuration(seconds: number): string {
+  if (!seconds) return '—'
   const m = Math.floor(seconds / 60)
   const s = Math.round(seconds % 60)
   return `${m}:${String(s).padStart(2, '0')}`

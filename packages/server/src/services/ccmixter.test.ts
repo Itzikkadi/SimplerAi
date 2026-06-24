@@ -39,7 +39,8 @@ describe('ccmixter', () => {
     expect(results[0].id).toBe('ccmixter:99')
     expect(results[0].source).toBe('ccmixter')
     expect(results[0].username).toBe('SoulMaker')
-    expect(results[0].previewUrl).toBe('https://ccmixter.org/content/SoulMaker/soul_vocal.mp3')
+    expect(results[0].previewUrl).toContain('/api/proxy?url=')
+    expect(results[0].previewUrl).toContain('soul_vocal.mp3')
     expect(results[0].sourceUrl).toBe('https://ccmixter.org/files/SoulMaker/99')
   })
 
