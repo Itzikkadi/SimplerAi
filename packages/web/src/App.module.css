@@ -1,11 +1,16 @@
 .shell {
   max-width: 760px;
   margin: 0 auto;
-  padding: 48px 20px 120px;
+  padding: 56px 20px 140px;
 }
-.logo { font-weight: 700; letter-spacing: -0.02em; }
-.accent { color: var(--mantine-color-teal-5); }
+.logo {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.accent {
+  color: var(--mantine-color-teal-5);
+}
 .reasoning {
-  border-left: 2px solid var(--mantine-color-teal-7);
-  padding-left: 12px;
+  color: var(--mantine-color-teal-4);
+  align-items: center;
 }
