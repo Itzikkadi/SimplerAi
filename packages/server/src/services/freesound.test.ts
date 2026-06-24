@@ -55,4 +55,15 @@ describe('freesound', () => {
     expect(out[0].id).toBe('7')
     expect(calls.length).toBeGreaterThanOrEqual(2)
   })
+
+  it('adds a bpm-tag OR group for a bpm range', () => {
+    const p = buildFreesoundParams({
+      keywords: 'vocal', tags: [], filters: { bpmMin: 120, bpmMax: 122 },
+      sort: 'relevant', reasoning: 'x',
+    })
+    const f = p.get('filter') ?? ''
+    expect(f).toContain('tag:"120bpm"')
+    expect(f).toContain('tag:"122"')
+    expect(f).toContain(' OR ')
+  })
 })

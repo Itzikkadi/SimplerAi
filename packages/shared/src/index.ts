@@ -15,12 +15,14 @@ export interface Seed {
   bpm?: number
   key?: string
   mood?: string
+  bpmMin?: number
+  bpmMax?: number
 }
 
 export interface StructuredQuery {
   keywords: string
   tags: string[]
-  filters: { license?: string; minDuration?: number; maxDuration?: number }
+  filters: { license?: string; minDuration?: number; maxDuration?: number; bpmMin?: number; bpmMax?: number }
   sort: SortKey
   reasoning: string
 }

@@ -10,13 +10,20 @@ const SORT_MAP: Record<SortKey, string> = {
 const FIELDS = 'id,name,username,duration,license,previews,tags'
 
 export function buildFreesoundParams(q: StructuredQuery): URLSearchParams {
-  // Keep the free-text query concise — Freesound ANDs every word, so piling the
-  // LLM's tags into `query` collapses results to zero. Tags belong in an OR
-  // filter, which broadens rather than narrows.
   const query = q.keywords
   const filters: string[] = []
   if (q.tags.length) {
     filters.push(`(${q.tags.map((t) => `tag:"${t}"`).join(' OR ')})`)
+  }
+  const { bpmMin, bpmMax } = q.filters
+  if (bpmMin != null || bpmMax != null) {
+    const lo = Math.round(bpmMin ?? bpmMax!)
+    const hi = Math.round(bpmMax ?? bpmMin!)
+    const terms: string[] = []
+    for (let b = Math.min(lo, hi); b <= Math.max(lo, hi) && terms.length < 60; b++) {
+      terms.push(`tag:"${b}bpm"`, `tag:"${b}"`)
+    }
+    if (terms.length) filters.push(`(${terms.join(' OR ')})`)
   }
   if (q.filters.minDuration != null) filters.push(`duration:[${q.filters.minDuration} TO *]`)
   if (q.filters.maxDuration != null) filters.push(`duration:[* TO ${q.filters.maxDuration}]`)
@@ -67,10 +74,11 @@ export async function searchFreesound(
 ): Promise<Sample[]> {
   // Freesound ANDs query words and tag filters, so a precise query can
   // legitimately return nothing. Broaden progressively until we get hits:
-  // 1) keywords + tag-OR filter, 2) drop the tag filter, 3) shorten keywords.
+  // 1) keywords + tag-OR filter, 2) drop the bpm filter, 3) drop mood tags, 4) shorten keywords.
   const attempts: StructuredQuery[] = [
     q,
-    { ...q, tags: [] },
+    { ...q, filters: { ...q.filters, bpmMin: undefined, bpmMax: undefined } },
+    { ...q, tags: [], filters: { ...q.filters, bpmMin: undefined, bpmMax: undefined } },
     { ...q, tags: [], filters: {}, keywords: q.keywords.split(/\s+/).slice(0, 2).join(' ') },
   ]
   for (const attempt of attempts) {

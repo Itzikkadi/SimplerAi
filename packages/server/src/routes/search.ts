@@ -15,6 +15,8 @@ const SearchBody = z.object({
       bpm: z.number().optional(),
       key: z.string().optional(),
       mood: z.string().optional(),
+      bpmMin: z.number().optional(),
+      bpmMax: z.number().optional(),
     })
     .optional(),
   sort: z.enum(SORT_KEYS).optional(),
@@ -32,6 +34,8 @@ export function searchRoute(db: Database.Database) {
     if (cached) return c.json(cached)
 
     const structuredQuery = await buildQuery(req, env.DEEPSEEK_API_KEY)
+    if (req.seed?.bpmMin != null) structuredQuery.filters.bpmMin = req.seed.bpmMin
+    if (req.seed?.bpmMax != null) structuredQuery.filters.bpmMax = req.seed.bpmMax
     const results = await searchFreesound(structuredQuery, env.FREESOUND_API_KEY)
     const payload: SearchResponse = { structuredQuery, reasoning: structuredQuery.reasoning, results }
 
