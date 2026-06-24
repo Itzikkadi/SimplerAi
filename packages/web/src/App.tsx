@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Group, Title, Text, Stack, Button, Paper, SegmentedControl, Box } from '@mantine/core'
 import { IconHeart } from '@tabler/icons-react'
-import { SORT_KEYS, type Sample, type SortKey, type SearchResponse } from '@simpler/shared'
+import { SORT_KEYS, type Sample, type SortKey } from '@simpler/shared'
 import { api } from './lib/api'
 import { useStore } from './store'
 import { seedToPrompt } from './audio/analyze'
@@ -19,20 +19,31 @@ const SORT_LABELS: Record<SortKey, string> = {
 
 export function App() {
   const qc = useQueryClient()
-  const { seed, setPlaying, playingId } = useStore()
-  const [prompt, setPrompt] = useState('dark aggressive trap vocal around 140 bpm')
-  const [sort, setSort] = useState<SortKey>('relevant')
+  const {
+    seed,
+    setPlaying,
+    playingId,
+    prompt,
+    setPrompt,
+    sort,
+    setSort,
+    lastSearch,
+    setLastSearch,
+  } = useStore()
   const [libraryOpen, setLibraryOpen] = useState(false)
-  const [data, setData] = useState<SearchResponse | null>(null)
 
   const library = useQuery({ queryKey: ['library'], queryFn: api.listLibrary })
 
   const searchMut = useMutation({
-    // Read the seed fresh from the store so an auto-search fired right after a
-    // track drop picks up the just-detected BPM (not a stale render value).
+    // Read seed + sort fresh from the store so an auto-search fired right after
+    // a track drop picks up the just-detected values (not a stale render value).
     mutationFn: (p: string) =>
-      api.search({ prompt: p, seed: useStore.getState().seed ?? undefined, sort }),
-    onSuccess: setData,
+      api.search({
+        prompt: p,
+        seed: useStore.getState().seed ?? undefined,
+        sort: useStore.getState().sort,
+      }),
+    onSuccess: setLastSearch,
   })
 
   const runSearch = (p: string = prompt) => searchMut.mutate(p.trim() || 'vocal')
@@ -45,7 +56,7 @@ export function App() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['library'] }),
   })
 
-  const results = data?.results ?? []
+  const results = lastSearch?.results ?? []
 
   return (
     <Box className={styles.shell}>
@@ -76,9 +87,9 @@ export function App() {
         </Group>
 
         {seed && <Text size="xs" c="dimmed">Seed: {seedToPrompt(seed)}</Text>}
-        {data?.reasoning && (
+        {lastSearch?.reasoning && (
           <Paper p="sm" radius="md" withBorder className={styles.reasoning}>
-            <Text size="sm">{data.reasoning}</Text>
+            <Text size="sm">{lastSearch.reasoning}</Text>
           </Paper>
         )}
 

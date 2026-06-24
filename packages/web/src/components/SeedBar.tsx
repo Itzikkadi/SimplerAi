@@ -17,7 +17,7 @@ const AUDIO_MIME = [
 ]
 
 export function SeedBar({ onSeeded }: { onSeeded?: () => void }) {
-  const { seed, setSeed } = useStore()
+  const { seed, setSeed, seedFileName, setSeedFileName, clearSeed } = useStore()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -35,6 +35,7 @@ export function SeedBar({ onSeeded }: { onSeeded?: () => void }) {
         bpmMax: bpm + 6,
         mood: mood.join(', '),
       })
+      setSeedFileName(file.name)
       onSeeded?.()
     } catch {
       setError("Couldn't analyze — try another file")
@@ -116,11 +117,16 @@ export function SeedBar({ onSeeded }: { onSeeded?: () => void }) {
               {t}
             </Badge>
           ))}
+          {seedFileName && (
+            <Text size="xs" c="dimmed" maw={140} truncate title={seedFileName}>
+              ♪ {seedFileName}
+            </Text>
+          )}
           <ActionIcon
             size="sm"
             variant="subtle"
             color="gray"
-            onClick={() => setSeed(null)}
+            onClick={() => clearSeed()}
             aria-label="Clear seed"
           >
             <IconX size={14} />
