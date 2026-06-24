@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Group, Badge, NumberInput, TextInput, Loader, Text, ActionIcon } from '@mantine/core'
 import { Dropzone, type FileWithPath } from '@mantine/dropzone'
 import { IconMusic, IconWaveSine, IconX } from '@tabler/icons-react'
-import { detectBpm } from '../audio/analyze'
+import { analyzeTrack } from '../audio/analyze'
 import { useStore } from '../store'
 
 const AUDIO_MIME = [
@@ -27,15 +27,25 @@ export function SeedBar({ onSeeded }: { onSeeded?: () => void }) {
     setError(null)
     setBusy(true)
     try {
-      const bpm = await detectBpm(file)
-      setSeed({ ...seed, bpm })
+      const { bpm, mood } = await analyzeTrack(file)
+      setSeed({
+        ...seed,
+        bpm,
+        bpmMin: Math.max(40, bpm - 6),
+        bpmMax: bpm + 6,
+        mood: mood.join(', '),
+      })
       onSeeded?.()
     } catch {
-      setError("Couldn't read BPM — try another file")
+      setError("Couldn't analyze — try another file")
     } finally {
       setBusy(false)
     }
   }
+
+  const moodTags = seed?.mood
+    ? seed.mood.split(',').map((m) => m.trim()).filter(Boolean)
+    : []
 
   return (
     <Group gap="sm" wrap="nowrap">
@@ -57,11 +67,9 @@ export function SeedBar({ onSeeded }: { onSeeded?: () => void }) {
           <Dropzone.Reject>
             <IconX size={18} />
           </Dropzone.Reject>
-          <Dropzone.Idle>
-            {busy ? <Loader size={16} /> : <IconMusic size={18} />}
-          </Dropzone.Idle>
+          <Dropzone.Idle>{busy ? <Loader size={16} /> : <IconMusic size={18} />}</Dropzone.Idle>
           <Text size="sm" c="dimmed">
-            {busy ? 'Reading BPM…' : 'Drop a track or click to seed'}
+            {busy ? 'Analyzing…' : 'Drop a track or click to seed'}
           </Text>
         </Group>
       </Dropzone>
@@ -74,23 +82,40 @@ export function SeedBar({ onSeeded }: { onSeeded?: () => void }) {
 
       {seed?.bpm != null && (
         <>
-          <NumberInput
-            size="xs"
-            w={110}
-            value={seed.bpm}
-            suffix=" bpm"
-            onChange={(v) => setSeed({ ...seed, bpm: Number(v) })}
-          />
+          <Group gap={4} wrap="nowrap">
+            <NumberInput
+              size="xs"
+              w={70}
+              hideControls
+              aria-label="min bpm"
+              value={seed.bpmMin ?? seed.bpm}
+              onChange={(v) => setSeed({ ...seed, bpmMin: Number(v) })}
+            />
+            <Text size="xs" c="dimmed">
+              –
+            </Text>
+            <NumberInput
+              size="xs"
+              w={86}
+              hideControls
+              suffix=" bpm"
+              aria-label="max bpm"
+              value={seed.bpmMax ?? seed.bpm}
+              onChange={(v) => setSeed({ ...seed, bpmMax: Number(v) })}
+            />
+          </Group>
           <TextInput
             size="xs"
-            w={90}
+            w={66}
             placeholder="key"
             value={seed.key ?? ''}
             onChange={(e) => setSeed({ ...seed, key: e.currentTarget.value })}
           />
-          <Badge variant="dot" color="teal">
-            seeded
-          </Badge>
+          {moodTags.map((t) => (
+            <Badge key={t} size="sm" variant="light" color="teal">
+              {t}
+            </Badge>
+          ))}
           <ActionIcon
             size="sm"
             variant="subtle"
