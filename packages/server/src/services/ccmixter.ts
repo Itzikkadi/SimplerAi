@@ -35,7 +35,7 @@ function normalizeItem(item: CcMixterItem): Sample | null {
     previewUrl: mp3.download_url,
     tags: [],
     source: 'ccmixter',
-    sourceUrl: `https://ccmixter.org/files/${item.artist_name}/${item.upload_id}`,
+    sourceUrl: `https://ccmixter.org/files/${item.artist_name ?? ''}/${item.upload_id}`,
   }
 }
 

@@ -39,7 +39,10 @@ async function resolveItem(doc: ArchiveDoc, fetchImpl: typeof fetch): Promise<Sa
       id: `archive:${doc.identifier}`,
       name: doc.title ?? doc.identifier,
       username: doc.creator ?? 'archive.org',
-      duration: audio.length ? parseFloat(audio.length) : 0,
+      duration: (() => {
+        const parsedDuration = parseFloat(audio.length)
+        return Number.isFinite(parsedDuration) ? parsedDuration : 0
+      })(),
       license: '',
       previewUrl: `https://archive.org/download/${doc.identifier}/${encodeURIComponent(audio.name)}`,
       tags: [],
