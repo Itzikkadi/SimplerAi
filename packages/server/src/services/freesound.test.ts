@@ -11,7 +11,7 @@ describe('freesound', () => {
   it('maps sort=obscure to ascending downloads and builds filter', () => {
     const p = buildFreesoundParams(q)
     expect(p.get('sort')).toBe('downloads_asc')
-    expect(p.get('query')).toBe('vocal shout')
+    expect(p.get('query')).toBe('vocal shout aggressive')
     expect(p.get('filter')).toContain('duration:[* TO 5]')
   })
 

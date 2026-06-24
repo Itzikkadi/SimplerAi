@@ -10,7 +10,7 @@ const SORT_MAP: Record<SortKey, string> = {
 const FIELDS = 'id,name,username,duration,license,previews,tags'
 
 export function buildFreesoundParams(q: StructuredQuery): URLSearchParams {
-  const query = q.keywords
+  const query = [q.keywords, ...q.tags].filter(Boolean).join(' ')
   const filters: string[] = []
   if (q.filters.minDuration != null) filters.push(`duration:[${q.filters.minDuration} TO *]`)
   if (q.filters.maxDuration != null) filters.push(`duration:[* TO ${q.filters.maxDuration}]`)
