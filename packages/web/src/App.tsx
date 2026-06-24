@@ -20,6 +20,7 @@ const SORT_LABELS: Record<SortKey, string> = {
 export function App() {
   const qc = useQueryClient()
   const { seed, setPlaying, playingId } = useStore()
+  const [prompt, setPrompt] = useState('dark aggressive trap vocal around 140 bpm')
   const [sort, setSort] = useState<SortKey>('relevant')
   const [libraryOpen, setLibraryOpen] = useState(false)
   const [data, setData] = useState<SearchResponse | null>(null)
@@ -27,9 +28,14 @@ export function App() {
   const library = useQuery({ queryKey: ['library'], queryFn: api.listLibrary })
 
   const searchMut = useMutation({
-    mutationFn: (prompt: string) => api.search({ prompt, seed: seed ?? undefined, sort }),
+    // Read the seed fresh from the store so an auto-search fired right after a
+    // track drop picks up the just-detected BPM (not a stale render value).
+    mutationFn: (p: string) =>
+      api.search({ prompt: p, seed: useStore.getState().seed ?? undefined, sort }),
     onSuccess: setData,
   })
+
+  const runSearch = (p: string = prompt) => searchMut.mutate(p.trim() || 'vocal')
   const saveMut = useMutation({
     mutationFn: (s: Sample) => api.saveSample(s, searchMut.variables ?? undefined),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['library'] }),
@@ -54,9 +60,14 @@ export function App() {
       </Group>
 
       <Stack gap="md">
-        <SearchPrompt loading={searchMut.isPending} onSearch={(p) => searchMut.mutate(p)} />
+        <SearchPrompt
+          value={prompt}
+          onChange={setPrompt}
+          loading={searchMut.isPending}
+          onSearch={runSearch}
+        />
         <Group justify="space-between">
-          <SeedBar />
+          <SeedBar onSeeded={() => runSearch()} />
           <SegmentedControl
             size="xs" value={sort}
             onChange={(v) => setSort(v as SortKey)}

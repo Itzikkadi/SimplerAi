@@ -16,7 +16,7 @@ const AUDIO_MIME = [
   'audio/x-m4a',
 ]
 
-export function SeedBar() {
+export function SeedBar({ onSeeded }: { onSeeded?: () => void }) {
   const { seed, setSeed } = useStore()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -29,6 +29,7 @@ export function SeedBar() {
     try {
       const bpm = await detectBpm(file)
       setSeed({ ...seed, bpm })
+      onSeeded?.()
     } catch {
       setError("Couldn't read BPM — try another file")
     } finally {
