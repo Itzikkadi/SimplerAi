@@ -8,7 +8,7 @@ import { buildQuery } from '../services/deepseek'
 import { searchFreesound } from '../services/freesound'
 import { searchArchive } from '../services/archive'
 import { searchCcMixter } from '../services/ccmixter'
-import { logSearch, readCache, writeCache } from '../db/index'
+import { logSearch, writeCache } from '../db/index'
 
 const SearchBody = z.object({
   prompt: z.string().min(1, 'prompt is required'),
@@ -31,10 +31,6 @@ export function searchRoute(db: Database.Database) {
     if (!parsed.success) return c.json({ error: parsed.error.issues[0]?.message ?? 'invalid request' }, 400)
     const req = parsed.data
 
-    const hash = JSON.stringify({ p: req.prompt, s: req.seed, o: req.sort })
-    const cached = readCache(db, hash) as SearchResponse | null
-    if (cached) return c.json(cached)
-
     const structuredQuery = await buildQuery(req, env.DEEPSEEK_API_KEY)
     if (req.seed?.bpmMin != null) structuredQuery.filters.bpmMin = req.seed.bpmMin
     if (req.seed?.bpmMax != null) structuredQuery.filters.bpmMax = req.seed.bpmMax
@@ -54,7 +50,7 @@ export function searchRoute(db: Database.Database) {
     const payload: SearchResponse = { structuredQuery, reasoning: structuredQuery.reasoning, results }
 
     logSearch(db, req.prompt, structuredQuery, results.length)
-    writeCache(db, hash, payload)
+    writeCache(db, JSON.stringify({ p: req.prompt, s: req.seed, o: req.sort }), payload)
     return c.json(payload)
   })
   return app

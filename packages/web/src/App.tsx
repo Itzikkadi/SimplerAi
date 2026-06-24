@@ -60,32 +60,33 @@ export function App() {
 
   return (
     <Box className={styles.shell}>
-      <Group justify="space-between" mb="xl">
-        <div>
-          <Title order={1} className={styles.logo}>
-            simpl<span className={styles.accent}>er</span>
-          </Title>
-          <Text c="dimmed" size="sm">
-            Sampling, simplified.
-          </Text>
-        </div>
-        <Button
-          variant="light"
-          leftSection={<IconHeart size={16} />}
-          onClick={() => setLibraryOpen(true)}
-        >
-          Library ({library.data?.length ?? 0})
-        </Button>
-      </Group>
-
-      <Stack gap="lg">
+      <Box className={styles.stickyTop}>
+        <Group justify="space-between" mb="sm">
+          <div>
+            <Title order={1} className={styles.logo}>
+              simpl<span className={styles.accent}>er</span>
+            </Title>
+            <Text c="dimmed" size="sm">
+              Sampling, simplified.
+            </Text>
+          </div>
+          <Button
+            variant="light"
+            leftSection={<IconHeart size={16} />}
+            onClick={() => setLibraryOpen(true)}
+          >
+            Library ({library.data?.length ?? 0})
+          </Button>
+        </Group>
         <SearchPrompt
           value={prompt}
           onChange={setPrompt}
           loading={searchMut.isPending}
           onSearch={runSearch}
         />
+      </Box>
 
+      <Stack gap="lg">
         <ReferenceTrack onSeeded={() => runSearch()} />
 
         <Group justify="space-between" align="center">
