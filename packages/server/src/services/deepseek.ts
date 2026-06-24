@@ -61,3 +61,56 @@ export async function buildQuery(
     return fallbackQuery(req)
   }
 }
+
+const PLAN_SYSTEM = `You are a search planner for a vocal-sample discovery app backed by sample libraries (Freesound, Archive.org).
+Decompose the producer's request into 1-4 COMPLEMENTARY sub-searches ("facets") that together cover the vibe — e.g. a lead vocal, a vocal texture/atmosphere, and an adlib/shout. For a simple request, return just 1 facet.
+Respond with ONLY a JSON object:
+{"facets":[{"role": string, "keywords": string, "tags": string[], "filters": {"license"?: string, "minDuration"?: number, "maxDuration"?: number}, "sort": "relevant"|"popular"|"newest"|"obscure"}], "reasoning": string}
+Each "keywords" MUST be 1-3 core words (libraries AND every word, so extra words return nothing) — put descriptors in "tags". "role" is a 1-3 word label. reasoning is one short sentence covering the whole plan.`
+
+export interface QueryPlan {
+  facets: StructuredQuery[]
+  reasoning: string
+}
+
+export function fallbackPlan(req: SearchRequest): QueryPlan {
+  return { facets: [fallbackQuery(req)], reasoning: 'Literal keyword search (DeepSeek fallback).' }
+}
+
+export async function buildQueryPlan(
+  req: SearchRequest,
+  apiKey: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<QueryPlan> {
+  try {
+    const seedLine = req.seed ? `\nDetected seed: ${JSON.stringify(req.seed)}` : ''
+    const res = await fetchImpl('https://api.deepseek.com/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        response_format: { type: 'json_object' },
+        messages: [
+          { role: 'system', content: PLAN_SYSTEM },
+          { role: 'user', content: `Request: ${req.prompt}${seedLine}\nPreferred sort: ${req.sort ?? 'relevant'}` },
+        ],
+      }),
+    })
+    if (!res.ok) throw new Error(`DeepSeek error: ${res.status}`)
+    const data = (await res.json()) as { choices?: { message?: { content?: string } }[] }
+    const content = data.choices?.[0]?.message?.content
+    if (!content) throw new Error('DeepSeek empty response')
+    const parsed = JSON.parse(content) as Record<string, unknown>
+    const rawFacets = Array.isArray(parsed.facets) ? parsed.facets : []
+    const facets: StructuredQuery[] = rawFacets.slice(0, 4).map((f) => {
+      const facet = f as Record<string, unknown>
+      const q = coerce(facet, req)
+      return typeof facet.role === 'string' ? { ...q, role: facet.role } : q
+    })
+    if (!facets.length) throw new Error('DeepSeek returned no facets')
+    return { facets, reasoning: String(parsed.reasoning ?? facets[0].reasoning) }
+  } catch (err) {
+    console.warn('[simpler] DeepSeek plan fallback:', (err as Error).message)
+    return fallbackPlan(req)
+  }
+}

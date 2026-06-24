@@ -25,6 +25,7 @@ export interface StructuredQuery {
   filters: { license?: string; minDuration?: number; maxDuration?: number; bpmMin?: number; bpmMax?: number }
   sort: SortKey
   reasoning: string
+  role?: string
 }
 
 export interface SearchRequest {
@@ -37,6 +38,7 @@ export interface SearchResponse {
   structuredQuery: StructuredQuery
   reasoning: string
   results: Sample[]
+  facets?: string[]
 }
 
 export interface SavedSample extends Sample {
